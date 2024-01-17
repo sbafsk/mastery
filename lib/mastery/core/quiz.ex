@@ -7,4 +7,8 @@ defmodule Mastery.Core.Quiz do
             last_response: nil,
             record: %{},
             mastered: []
+
+  def new(fields) do
+    struct!(__MODULE__, fields)
+  end
 end
