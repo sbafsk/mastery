@@ -1,4 +1,4 @@
-defmodule Mastery.Example.Math do
+defmodule Mastery.Examples.Math do
   alias Mastery.Core.Quiz
 
   def template_fields() do
