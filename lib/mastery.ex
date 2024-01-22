@@ -2,9 +2,7 @@ defmodule Mastery do
   @moduledoc """
   Documentation for `Mastery`.
   """
-
-  alias Mastery.Boundary.QuizSession
-  alias Mastery.Boundary.{QuizManager, QuizManager}
+  alias Mastery.Boundary.{QuizSession, QuizManager, Proctor}
   alias Mastery.Boundary.{TemplateValidator, QuizValidator}
   alias Mastery.Core.Quiz
 
@@ -39,5 +37,13 @@ defmodule Mastery do
 
   def answer_question(session, answer) do
     GenServer.call(via(session), {:answer_question, answer})
+  end
+
+  def schedule_quiz(quiz, templates, start_at, end_at) do
+    with :ok <- QuizValidator.errors(quiz),
+         true <- Enum.all?(templates, &(:ok == TemplateValidator.errors(&1))),
+         :ok <- Proctor.schedule_quiz(quiz, templates, start_at, end_at),
+         do: :ok,
+         else: (error -> error)
   end
 end
