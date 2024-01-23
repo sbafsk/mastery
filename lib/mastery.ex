@@ -6,7 +6,7 @@ defmodule Mastery do
   alias Mastery.Boundary.{TemplateValidator, QuizValidator}
   alias Mastery.Core.Quiz
 
-  import Mastery.Boundary.QuizSession, only: [via: 1]
+  @persistence_fn Application.get_env(:mastery, :persistence_fn)
 
   def build_quiz(fields) do
     with :ok <- QuizValidator.errors(fields),
@@ -32,17 +32,17 @@ defmodule Mastery do
   end
 
   def select_question(session) do
-    GenServer.call(via(session), :select_question)
+    QuizSession.select_question(session)
   end
 
-  def answer_question(session, answer) do
-    GenServer.call(via(session), {:answer_question, answer})
+  def answer_question(name, answer, persistence_fn \\ @persistence_fn) do
+    QuizSession.answer_question(name, answer, persistence_fn)
   end
 
-  def schedule_quiz(quiz, templates, start_at, end_at) do
+  def schedule_quiz(quiz, templates, start_at, end_at, notify_pid \\ nil) do
     with :ok <- QuizValidator.errors(quiz),
          true <- Enum.all?(templates, &(:ok == TemplateValidator.errors(&1))),
-         :ok <- Proctor.schedule_quiz(quiz, templates, start_at, end_at),
+         :ok <- Proctor.schedule_quiz(quiz, templates, start_at, end_at, notify_pid),
          do: :ok,
          else: (error -> error)
   end
